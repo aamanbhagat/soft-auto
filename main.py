@@ -363,6 +363,13 @@ async def run_once(url: str, instance_id: int, _unused_user_data_dir: Path, stat
             
             page = await context.new_page()
             
+            # Block images, fonts, and media to save bandwidth
+            await page.route("**/*", lambda route: (
+                route.abort() if route.request.resource_type in [
+                    "image", "media", "font", "stylesheet", "websocket", "manifest"
+                ] else route.continue_()
+            ))
+            
             # Additional page-level stealth enhancements
             await page.evaluate("""
                 // Override common automation detection points
